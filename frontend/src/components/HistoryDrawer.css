@@ -1,0 +1,258 @@
+/* History drawer — global slide-in panel, mounted once at the App level so it
+   can open over any page (triggered from the navbar, or the dashboard's
+   floating History button) without navigating away from wherever the user
+   currently is. Fully self-contained: doesn't depend on any page-scoped CSS
+   since it can render on top of Home, the dashboard, auth pages, etc. */
+
+/* Always rendered (never conditionally mounted) so the backdrop's blur layer
+   is allocated once and reused — toggling it on/off via mount/unmount forced
+   the browser to rebuild that compositing layer from scratch on every open,
+   which showed up as a visible lag before the blur kicked in. `visibility`
+   (rather than `display`) keeps it out of the way when closed without
+   destroying that layer. */
+
+.history-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.32, 0.72, 0, 1), visibility 0.35s;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.history-drawer--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.history-drawer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 15, 15, 0.6);
+  backdrop-filter: blur(12px);
+}
+
+.history-drawer__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(420px, 100vw);
+  background: #0d211f;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.history-drawer--visible .history-drawer__panel {
+  transform: translateX(0);
+}
+
+.history-drawer__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.history-drawer__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #bbdddb;
+  margin: 0;
+}
+
+.history-drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #eef8f7;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.history-drawer__close:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.history-drawer__close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.history-drawer__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-drawer__hint {
+  color: rgba(238, 248, 247, 0.6);
+  font-size: 0.92rem;
+  padding: 20px 4px;
+  margin: 0;
+}
+
+.history-drawer__hint--error {
+  color: #f87171;
+}
+
+.history-drawer__loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.history-drawer__spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  border-top-color: #ff4162;
+  animation: history-drawer-spin 0.9s linear infinite;
+}
+
+@keyframes history-drawer-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.history-drawer__item {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+
+.history-drawer__item:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(-2px);
+}
+
+.history-drawer__item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 4px 16px 18px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  color: #eef8f7;
+  background: transparent;
+  border: none;
+}
+
+.history-drawer__route {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.history-drawer__meta {
+  font-size: 0.78rem;
+  color: rgba(238, 248, 247, 0.5);
+}
+
+.history-drawer__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  margin: 8px 8px 8px 0;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  color: rgba(238, 248, 247, 0.4);
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.history-drawer__delete:hover {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+.history-drawer__delete svg {
+  width: 16px;
+  height: 16px;
+}
+
+.history-drawer__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #eef8f7;
+  font-size: 0.88rem;
+}
+
+.history-drawer__confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.history-drawer__confirm-btn {
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.82rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #eef8f7;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.history-drawer__confirm-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.history-drawer__confirm-btn--danger {
+  background: #f87171;
+  border-color: #f87171;
+  color: #2a0a0a;
+}
+
+.history-drawer__confirm-btn--danger:hover {
+  background: #f56060;
+}
+
+.history-drawer__confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (max-width: 480px) {
+  .history-drawer__panel {
+    width: 100vw;
+  }
+}

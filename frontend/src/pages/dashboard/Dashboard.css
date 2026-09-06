@@ -1,0 +1,541 @@
+/* Dashboard (post-login home) — fully scoped under `.dashboard-shell` / `.wizard-*`. */
+
+.dashboard-shell {
+  --dash-coral: #ff4162;
+  --dash-coral-deep: #e02f4d;
+  --dash-teal: #028b8a;
+  --dash-teal-deep: #008181;
+  --dash-mint: #bbdddb;
+  --dash-ink: #071716;
+  --dash-ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Fixed to the viewport (not just `.dashboard-shell`'s box below the navbar) so
+   the map bleeds all the way to the top edge — the navbar's transparent gap
+   above the floating pill then shows more map instead of a bare page background.
+   `isolation: isolate` pins every Leaflet-internal layer (tile pane, marker
+   pane — all GPU-transformed for panning/zooming) to this single stacking
+   level, so they can never paint above the fixed overlay UI below regardless
+   of how Chrome orders their individual compositing layers mid-animation. */
+.dashboard-map {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  isolation: isolate;
+}
+
+.dashboard-map .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: var(--dash-ink);
+}
+
+/* Standard OSM tiles, pushed to a dark palette via filter (markers/popups are
+   in separate leaflet panes and are untouched by this). */
+.dashboard-map .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.65);
+}
+
+/* Pulsing current-location marker */
+
+.dashboard-pulse-marker {
+  position: relative;
+  width: 22px;
+  height: 22px;
+}
+
+.dashboard-pulse-marker__dot {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: #ff4162;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.dashboard-pulse-marker__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255, 65, 98, 0.55);
+  animation: dashboard-pulse 2.2s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+}
+
+@keyframes dashboard-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* Top-left greeting — sits below the floating navbar pill (not beside it):
+   the pill stretches to a centered max-width of 960px, so anything anchored
+   to the left edge at the *same* height as the pill can slide underneath it
+   once its content is wide enough. Clearing the pill's height entirely avoids
+   that regardless of content length or viewport width. */
+
+.dashboard-overlay-top {
+  position: fixed;
+  top: 96px;
+  left: 24px;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.dashboard-greeting {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(7, 23, 22, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  color: #eef8f7;
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+/* Floating action buttons */
+
+.dashboard-actions {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.dashboard-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px 10px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(16px);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.98rem;
+  cursor: pointer;
+  transition: transform 0.4s var(--dash-ease), background 0.35s var(--dash-ease),
+    box-shadow 0.4s var(--dash-ease);
+}
+
+.dashboard-action:hover {
+  transform: translateY(-2px);
+}
+
+.dashboard-action:active {
+  transform: scale(0.98);
+}
+
+.dashboard-action__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dashboard-action__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.dashboard-action--primary {
+  background: var(--dash-coral);
+  color: #ffffff;
+  box-shadow: 0 16px 32px -14px rgba(255, 65, 98, 0.6);
+}
+
+.dashboard-action--primary .dashboard-action__icon {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.dashboard-action--primary:hover {
+  background: var(--dash-coral-deep);
+}
+
+.dashboard-action--ghost {
+  background: rgba(7, 23, 22, 0.68);
+  color: #eef8f7;
+  position: relative;
+}
+
+.dashboard-action--ghost .dashboard-action__icon {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-action--ghost:hover {
+  background: rgba(7, 23, 22, 0.85);
+}
+
+.dashboard-action__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--dash-teal);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+@media (max-width: 560px) {
+  .dashboard-actions {
+    bottom: 20px;
+    gap: 10px;
+  }
+
+  .dashboard-action {
+    padding: 9px 18px 9px 9px;
+    font-size: 0.9rem;
+  }
+
+  .dashboard-overlay-top {
+    top: 88px;
+    left: 16px;
+  }
+}
+
+/* ===================== Trip wizard overlay ===================== */
+
+.wizard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.wizard-overlay--visible {
+  opacity: 1;
+}
+
+.wizard-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 15, 15, 0.72);
+  backdrop-filter: blur(20px);
+}
+
+.wizard-panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  overflow: auto;
+  border-radius: 2rem;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transform: translateY(24px) scale(0.98);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.wizard-overlay--visible .wizard-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.wizard-panel__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 0;
+}
+
+.wizard-progress {
+  display: flex;
+  gap: 6px;
+}
+
+.wizard-progress__dot {
+  width: 20px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background 0.4s ease;
+}
+
+.wizard-progress__dot--active {
+  background: var(--dash-coral);
+}
+
+.wizard-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #eef8f7;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.wizard-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.wizard-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.wizard-body {
+  padding: 28px 32px 32px;
+  background: #0d211f;
+  border-radius: 1.7rem;
+  margin-top: 8px;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+}
+
+.wizard-step {
+  flex: 1;
+}
+
+.wizard-step--forward {
+  animation: wizard-slide-in-forward 0.5s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.wizard-step--back {
+  animation: wizard-slide-in-back 0.5s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes wizard-slide-in-forward {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes wizard-slide-in-back {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.wizard-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--dash-mint);
+  margin: 0 0 14px;
+}
+
+.wizard-question {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #eef8f7;
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.wizard-subtext {
+  color: rgba(238, 248, 247, 0.62);
+  font-size: 0.92rem;
+  margin: 0 0 24px;
+  line-height: 1.55;
+}
+
+.wizard-locate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(2, 139, 138, 0.18);
+  border: 1px solid rgba(2, 139, 138, 0.4);
+  color: #8fd4d3;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-family: inherit;
+}
+
+.wizard-locate:hover {
+  background: rgba(2, 139, 138, 0.28);
+}
+
+.wizard-locate:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.wizard-locate svg {
+  width: 15px;
+  height: 15px;
+}
+
+.wizard-cycle {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 8px 0 4px;
+}
+
+.wizard-cycle__value {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.wizard-cycle__value small {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(238, 248, 247, 0.5);
+  margin-left: 6px;
+}
+
+.wizard-cycle input[type="range"] {
+  width: 100%;
+  accent-color: var(--dash-coral);
+}
+
+.wizard-review {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wizard-review__item button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #eef8f7;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.3s ease, border-color 0.3s ease;
+  font-family: inherit;
+}
+
+.wizard-review__item button:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.wizard-review__item span {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(238, 248, 247, 0.5);
+  flex-shrink: 0;
+}
+
+.wizard-review__item strong {
+  font-weight: 700;
+  text-align: right;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wizard-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.wizard-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 26px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.35s cubic-bezier(0.32, 0.72, 0, 1), transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.wizard-btn:active {
+  transform: scale(0.98);
+}
+
+.wizard-btn--primary {
+  background: var(--dash-coral);
+  color: #ffffff;
+  box-shadow: 0 14px 28px -14px rgba(255, 65, 98, 0.6);
+}
+
+.wizard-btn--primary:hover {
+  background: var(--dash-coral-deep);
+}
+
+.wizard-btn--primary:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.wizard-btn--ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef8f7;
+}
+
+.wizard-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+@media (max-width: 560px) {
+  .wizard-body {
+    padding: 22px 20px 24px;
+  }
+
+  .wizard-question {
+    font-size: 1.25rem;
+  }
+}

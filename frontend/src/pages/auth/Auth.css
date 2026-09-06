@@ -1,0 +1,90 @@
+/* Auth pages (sign in / sign up) — fully scoped under `.auth-shell`. */
+
+.auth-shell {
+  position: relative;
+  flex: 1;
+  min-height: 78vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 64px 20px 96px;
+  background: linear-gradient(180deg, #071716 0%, #0a2e2c 45%, #008181 100%);
+}
+
+.auth-shell__glow {
+  position: absolute;
+  inset: -10% -10% auto -10%;
+  height: 60%;
+  background: radial-gradient(ellipse 640px 360px at 70% 0%, rgba(255, 65, 98, 0.18), transparent 70%);
+  pointer-events: none;
+}
+
+.auth-shell__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-shell__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #eef8f7;
+  margin-bottom: 24px;
+}
+
+.auth-shell__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #028b8a, #008181);
+  color: #ffffff;
+}
+
+.auth-shell__mark svg {
+  width: 17px;
+  height: 17px;
+}
+
+.auth-shell__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #bbdddb;
+  margin: 0 0 28px;
+}
+
+.auth-shell__card {
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px;
+  border-radius: 2rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(18px);
+}
+
+/* Clerk component theming — colors/font/radius come from the `appearance.variables`
+   prop passed alongside this; this override only fixes radius/shadow so the Clerk
+   card sits flush inside the glass shell above instead of floating its own. Width
+   is intentionally left alone: the shell above hugs Clerk's own natural width
+   (`width: fit-content`) rather than stretching Clerk to fill it, since Clerk's
+   internal layout doesn't reliably fill a forced parent width. */
+
+.tenfour-clerk-card {
+  border-radius: 1.5rem !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}

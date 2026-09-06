@@ -1,0 +1,238 @@
+/* Trip detail page — full-screen map + floating glass panels, scoped under
+   `.trip-panel` / `.trip-loading` / `.trip-error` / `.logs-overlay-*`. Shares
+   `.dashboard-map`, `.dashboard-overlay-top`, `.dashboard-greeting`,
+   `.dashboard-actions`, `.dashboard-action*` and `.wizard-*` from
+   `../dashboard/Dashboard.css` (imported alongside this file) for the map
+   shell, floating buttons, and step-wizard chrome — same "full-screen map
+   page" pattern as the dashboard, just with trip-specific panels layered in. */
+
+/* Leaflet popups, dark-themed to match the map instead of stock white */
+
+.dashboard-map .leaflet-popup-content-wrapper {
+  background: #0d211f;
+  color: #eef8f7;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+.dashboard-map .leaflet-popup-tip {
+  background: #0d211f;
+}
+
+.dashboard-map .leaflet-popup-content {
+  margin: 10px 14px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.dashboard-map a.leaflet-popup-close-button {
+  color: rgba(238, 248, 247, 0.6);
+}
+
+/* Loading / error states */
+
+.trip-loading,
+.trip-error {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: linear-gradient(180deg, #071716 0%, #0a2e2c 45%, #008181 100%);
+  color: #eef8f7;
+  text-align: center;
+  padding: 24px;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.trip-loading__spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  border-top-color: #ff4162;
+  animation: trip-spin 0.9s linear infinite;
+}
+
+@keyframes trip-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.trip-loading p,
+.trip-error p {
+  margin: 0;
+  color: rgba(238, 248, 247, 0.7);
+  font-size: 0.95rem;
+}
+
+.trip-error a {
+  margin-top: 8px;
+  color: #ff4162;
+  font-weight: 600;
+}
+
+/* Route summary pill (top-left, reuses .dashboard-greeting look) */
+
+.trip-summary {
+  max-width: min(70vw, 520px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Trip breakdown + legend panel (top-right, double-bezel glass) */
+
+.trip-panel {
+  position: fixed;
+  top: 96px;
+  right: 24px;
+  z-index: 20;
+  width: 280px;
+  max-height: calc(100vh - 192px);
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(16px);
+}
+
+.trip-panel__inner {
+  background: #0d211f;
+  border-radius: 1.2rem;
+  padding: 22px 20px;
+}
+
+.trip-panel__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #bbdddb;
+  margin: 0 0 16px;
+}
+
+.trip-panel__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 12px;
+  margin: 0;
+}
+
+.trip-panel__stat dt {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(238, 248, 247, 0.5);
+  margin: 0 0 3px;
+}
+
+.trip-panel__stat dd {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: #eef8f7;
+}
+
+.trip-panel__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 18px 0 16px;
+}
+
+.trip-panel__legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: rgba(238, 248, 247, 0.72);
+}
+
+.trip-panel__legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trip-panel__swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+@media (max-width: 760px) {
+  .trip-panel {
+    top: auto;
+    bottom: 100px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-height: 40vh;
+  }
+}
+
+/* "or" divider inside the logs wizard's shipping step */
+
+.wizard-or {
+  text-align: center;
+  color: rgba(238, 248, 247, 0.4);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 2px 0 16px;
+}
+
+/* Log sheets viewer overlay (reuses .wizard-overlay/.wizard-panel chrome) */
+
+.logs-overlay__panel {
+  max-width: 760px;
+}
+
+.logs-overlay__body {
+  padding: 28px 32px 32px;
+  background: #0d211f;
+  border-radius: 1.7rem;
+  margin-top: 8px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.logs-overlay__summary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin: 0 0 20px;
+}
+
+.logs-overlay__summary h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  color: #eef8f7;
+}
+
+.logs-overlay__summary p {
+  margin: 0;
+  color: rgba(238, 248, 247, 0.6);
+  font-size: 0.88rem;
+}
+
+.logs-overlay__export-all {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 24px;
+}
+
+@media (max-width: 560px) {
+  .logs-overlay__body {
+    padding: 22px 20px 24px;
+  }
+}
